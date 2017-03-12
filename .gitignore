@@ -1,0 +1,7 @@
+.idea/
+AppUserData.iml
+target/
+logs/
+*.db
+doc/
+*.iml
