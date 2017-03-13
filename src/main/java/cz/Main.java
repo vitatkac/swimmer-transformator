@@ -1,6 +1,7 @@
 package cz;
 
 import au.com.bytecode.opencsv.CSVReader;
+import javafx.beans.binding.MapExpression;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -53,10 +54,10 @@ public class Main {
     CSVReader inputReader = new CSVReader( new InputStreamReader( new FileInputStream( input ), encoding ) );
 
     List<Swimmer> swimmers = null;
-    if (inputFormat.equals( "AM" )) {
-      processAmSwimmerFormat( inputReader.readAll(),id,categoryGroups );
-    } else if (inputFormat.equals( "PM" )) {
-      processPmSwimmerFormat( inputReader.readAll(),id,categoryGroups );
+    if (inputFormat.toLowerCase().trim().equals( "am" )) {
+      swimmers = processAmSwimmerFormat( inputReader.readAll(), id, categoryGroups );
+    } else if (inputFormat.toLowerCase().trim().equals( "pm" )) {
+      swimmers = processPmSwimmerFormat( inputReader.readAll(), id, categoryGroups );
     } else {
       throw new RuntimeException( "Input format isn't set." );
     }
@@ -71,12 +72,15 @@ public class Main {
     for (Swimmer swimmer : swimmers) {
       Element swimmerEl = doc.createElement( "swimmer" );
       swimmerEl.setAttribute( "id", String.valueOf( swimmer.getId() ) );
-      swimmerEl.setAttribute( "name", swimmer.getName() );
-      swimmerEl.setAttribute( "catYear", "" );
+      swimmerEl.setAttribute( "name", swimmer.getName() + " " + swimmer.getSurname() );
+      swimmerEl.setAttribute( "catYear", swimmer.getCatYear() );
       swimmerEl.setAttribute( "sex", swimmer.getGender() );
-      for (String category : swimmer.getCategories()) {
+      for (Map.Entry<String, String> category : swimmer.getCategories().entrySet()) {
         Element categoryEl = doc.createElement( "swdics" );
-        categoryEl.setAttribute( "discNo", category );
+        categoryEl.setAttribute( "discNo", category.getKey() );
+        if (category.getValue() != null) {
+          categoryEl.setAttribute( "startTime", category.getValue() );
+        }
         swimmerEl.appendChild( categoryEl );
       }
       teamEl.appendChild( swimmerEl );
@@ -92,55 +96,90 @@ public class Main {
     System.out.println( "Output created." );
   }
 
-  private static List<Swimmer> processPmSwimmerFormat( List<String[]> strings,
-                                              long id,
-                                              Map<String, CategoryGroup> categoryGroups ) {
-    return null;
+  private static List<Swimmer> processPmSwimmerFormat( List<String[]> data,
+                                                       long id,
+                                                       Map<String, CategoryGroup> categoryGroups ) {
+    List<Swimmer> swimmers = new ArrayList<>();
+    for (String[] row : data) {
+      Swimmer swimmer = new Swimmer();
+      swimmer.setId( id );
+      swimmer.setSurname( row[2] );
+      swimmer.setName( row[3] );
+      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
+      swimmer.setCatYear( row[5] );
+
+      swimmer.setCategories( new HashMap<>() );
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 6, 69 ) ).iterator();
+      while (iterator.hasNext()) {
+        String categoryCode = null;
+        String startTime    = null;
+        String category     = iterator.next().trim();
+
+        if (!category.isEmpty()) {
+          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
+          if (categoryCode == null) {
+            System.err.println( "Category not found: " + category );
+          }
+        }
+
+        if (iterator.hasNext()) {
+          startTime = iterator.next();
+        }
+        if (!category.isEmpty()) {
+          swimmer.getCategories().put( categoryCode, startTime );
+        }
+      }
+
+      id++;
+      swimmers.add( swimmer );
+    }
+    return swimmers;
   }
 
   private static List<Swimmer> processAmSwimmerFormat( List<String[]> data, long id, Map<String, CategoryGroup>
-          categoryGroups){
+          categoryGroups ) {
 
     List<Swimmer> swimmers = new ArrayList<>();
-      for (String[] row : data) {
-        Swimmer swimmer = new Swimmer();
-        swimmer.setId( id );
-        swimmer.setSurname( row[2] );
-        swimmer.setName( row[3] );
-        swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
-
-        for (String catYear : Arrays.copyOfRange( row, 6, 8 )) {
-          if (!catYear.isEmpty()) {
-            swimmer.setCatYear( catYear );
-            break;
-          }
+    for (String[] row : data) {
+      Swimmer swimmer = new Swimmer();
+      swimmer.setId( id );
+      swimmer.setSurname( row[2] );
+      swimmer.setName( row[3] );
+      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
+      for (String catYear : Arrays.copyOfRange( row, 6, 9 )) {
+        swimmer.setCatYear( catYear );
+        if (!catYear.isEmpty()) {
+          swimmer.setCatYear( catYear );
+          break;
         }
-
-        swimmer.setCategories( new ArrayList<String>() );
-        Iterator<String> iterator = Arrays.asList(  Arrays.copyOfRange( row, 9, 54 )).iterator();
-        while(iterator.hasNext()){
-          String category = iterator.next();
-          if (!category.isEmpty()) {
-            String categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
-            if (categoryCode != null) {
-              swimmer.getCategories().add( categoryCode );
-            } else {
-              swimmer.getCategories().add( "" );
-              System.err.println( "Category not found: " + category );
-            }
-          }
-
-          if(iterator.hasNext()){
-            iterator.next();
-          }else{
-            break;
-          }
-        }
-
-        id++;
-        swimmers.add( swimmer );
       }
-      return swimmers;
+
+      swimmer.setCategories( new HashMap<>() );
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 54 ) ).iterator();
+      while (iterator.hasNext()) {
+        String categoryCode = null;
+        String startTime    = null;
+        String category     = iterator.next().trim();
+
+        if (!category.isEmpty()) {
+          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
+          if (categoryCode == null) {
+            System.err.println( "Category not found: " + category );
+          }
+        }
+
+        if (iterator.hasNext()) {
+          startTime = iterator.next();
+        }
+        if (!category.isEmpty()) {
+          swimmer.getCategories().put( categoryCode, startTime );
+        }
+      }
+
+      id++;
+      swimmers.add( swimmer );
+    }
+    return swimmers;
   }
 
 

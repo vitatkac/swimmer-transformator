@@ -1,6 +1,7 @@
 package cz;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by vtkac on 25.02.2017.
@@ -17,7 +18,7 @@ public class Swimmer {
 
   private String catYear;
 
-  private List<String> categories;
+  private Map<String,String> categories;
 
   public Swimmer() {
   }
@@ -46,11 +47,11 @@ public class Swimmer {
     this.name = name;
   }
 
-  public List<String> getCategories() {
+  public Map<String, String> getCategories() {
     return categories;
   }
 
-  public void setCategories( List<String> categories ) {
+  public void setCategories( Map<String, String> categories ) {
     this.categories = categories;
   }
 
