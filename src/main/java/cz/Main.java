@@ -189,7 +189,7 @@ public class Main {
       }
 
       swimmer.setCategories( new HashMap<>() );
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 54 ) ).iterator();
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 14 ) ).iterator();
       while (iterator.hasNext()) {
         String categoryCode = null;
         String startTime    = null;
