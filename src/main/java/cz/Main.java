@@ -1,7 +1,6 @@
 package cz;
 
 import au.com.bytecode.opencsv.CSVReader;
-import javafx.beans.binding.MapExpression;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,13 +12,14 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
 
-/**
- * Created by vtkac on 25.02.2017.
+/** Class to transform data from csv to xml
+ * @author Vitezslav Tkac
  */
 public class Main {
 
   public static void main( String[] args ) throws IOException, ParserConfigurationException, TransformerException {
 
+    // loading particular arguments
     File                       input          = new File( args[0] );
     String                     inputFormat    = args[1];
     File                       categoryFolder = new File( args[2] );
@@ -28,19 +28,25 @@ public class Main {
     String                     encoding       = args[5];
     Map<String, CategoryGroup> categoryGroups = new HashMap<>();
 
+// building category groups
+// for each file in folder
     for (File categoryFile : categoryFolder.listFiles()) {
       String        categoryName  = null;
       CategoryGroup categoryGroup = new CategoryGroup();
 
+      // load file a category configuration file into csv reader
       CSVReader inputReader = new CSVReader( new InputStreamReader( new FileInputStream( categoryFile ),
                                                                     encoding ) );
       HashMap<String, String> categories = new HashMap<>();
       int                     i          = 0;
+      // for each row in csv file
       for (String[] row : inputReader.readAll()) {
+        // if current row is the first then fullfill the category name and code
         if (i == 0) {
           categoryName = row[0];
           categoryGroup.setCode( row[1] );
         } else {
+          // otherwise add a new category
           categories.put( row[0], row[1] );
         }
         i++;
@@ -51,9 +57,11 @@ public class Main {
 
     }
 
+    // load file an input file into csv reader
     CSVReader inputReader = new CSVReader( new InputStreamReader( new FileInputStream( input ), encoding ) );
 
     List<Swimmer> swimmers = null;
+    // here is necessary to decide, which format will be processed am/pm
     if (inputFormat.toLowerCase().trim().equals( "am" )) {
       swimmers = processAmSwimmerFormat( inputReader.readAll(), id, categoryGroups );
     } else if (inputFormat.toLowerCase().trim().equals( "pm" )) {
@@ -63,12 +71,14 @@ public class Main {
     }
     System.out.println( "Swimmers created: " + swimmers.size() );
 
+    // create a new xml document object
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder        builder = factory.newDocumentBuilder();
     Document               doc     = builder.newDocument();
     Element                teamEl  = doc.createElement( "team" );
     doc.appendChild( teamEl );
 
+    // for each swimmer object build a new xml node
     for (Swimmer swimmer : swimmers) {
       Element swimmerEl = doc.createElement( "swimmer" );
       swimmerEl.setAttribute( "id", String.valueOf( swimmer.getId() ) );
@@ -86,16 +96,27 @@ public class Main {
       teamEl.appendChild( swimmerEl );
     }
 
+    // preparation the transformation objects from xml object into stream
     TransformerFactory transformerFactory = TransformerFactory.newInstance();
     Transformer        transformer        = transformerFactory.newTransformer();
     transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
 
+    // define the source
     DOMSource    source = new DOMSource( doc );
+    // result will be into stream
     StreamResult result = new StreamResult( output );
+
+    // do the transformation
     transformer.transform( source, result );
     System.out.println( "Output created." );
   }
 
+  /** Method to process csv data in pm format into {@link Swimmer} objects
+   * @param data - list of swimmer data
+   * @param id - start id index
+   * @param categoryGroups - category groups to define category code
+   * @return list of swimmers
+   */
   private static List<Swimmer> processPmSwimmerFormat( List<String[]> data,
                                                        long id,
                                                        Map<String, CategoryGroup> categoryGroups ) {
@@ -105,16 +126,21 @@ public class Main {
       swimmer.setId( id );
       swimmer.setSurname( row[2] );
       swimmer.setName( row[3] );
+      // get the category code by the name
       swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
       swimmer.setCatYear( row[5] );
 
       swimmer.setCategories( new HashMap<>() );
+      // put the cols 6 - 69 into iterator and get the category code and start time
       Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 6, 69 ) ).iterator();
+      // loop while a next value exists
       while (iterator.hasNext()) {
         String categoryCode = null;
         String startTime    = null;
+        // get the next value from iterator - category name
         String category     = iterator.next().trim();
 
+        // if category isn't empty then get the category code
         if (!category.isEmpty()) {
           categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
           if (categoryCode == null) {
@@ -122,6 +148,7 @@ public class Main {
           }
         }
 
+        // get the next value from iterator if the next value exists - start time
         if (iterator.hasNext()) {
           startTime = iterator.next();
         }
@@ -136,6 +163,12 @@ public class Main {
     return swimmers;
   }
 
+  /** Method to process csv data in am format into {@link Swimmer} objects
+   * @param data - list of swimmer data
+   * @param id - start id index
+   * @param categoryGroups - category groups to define category code
+   * @return list of swimmers
+   */
   private static List<Swimmer> processAmSwimmerFormat( List<String[]> data, long id, Map<String, CategoryGroup>
           categoryGroups ) {
 
@@ -146,6 +179,7 @@ public class Main {
       swimmer.setSurname( row[2] );
       swimmer.setName( row[3] );
       swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
+      // get a category year from cols 6 - 9. only the first non-empty value is taken
       for (String catYear : Arrays.copyOfRange( row, 6, 9 )) {
         swimmer.setCatYear( catYear );
         if (!catYear.isEmpty()) {
