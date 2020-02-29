@@ -12,7 +12,9 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
 
-/** Class to transform data from csv to xml
+/**
+ * Class to transform data from csv to xml
+ *
  * @author Vitezslav Tkac
  */
 public class Main {
@@ -102,7 +104,7 @@ public class Main {
     transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
 
     // define the source
-    DOMSource    source = new DOMSource( doc );
+    DOMSource source = new DOMSource( doc );
     // result will be into stream
     StreamResult result = new StreamResult( output );
 
@@ -111,9 +113,11 @@ public class Main {
     System.out.println( "Output created." );
   }
 
-  /** Method to process csv data in pm format into {@link Swimmer} objects
-   * @param data - list of swimmer data
-   * @param id - start id index
+  /**
+   * Method to process csv data in pm format into {@link Swimmer} objects
+   *
+   * @param data           - list of swimmer data
+   * @param id             - start id index
    * @param categoryGroups - category groups to define category code
    * @return list of swimmers
    */
@@ -124,38 +128,19 @@ public class Main {
     for (String[] row : data) {
       Swimmer swimmer = new Swimmer();
       swimmer.setId( id );
-      swimmer.setSurname( row[2] );
-      swimmer.setName( row[3] );
+      swimmer.setSurname( row[3] );
+      swimmer.setName( row[4] );
       // get the category code by the name
       swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
-      swimmer.setCatYear( row[5] );
+      swimmer.setCatYear( row[6] );
 
       swimmer.setCategories( new HashMap<>() );
-      // put the cols 6 - 69 into iterator and get the category code and start time
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 6, 69 ) ).iterator();
-      // loop while a next value exists
-      while (iterator.hasNext()) {
-        String categoryCode = null;
-        String startTime    = null;
-        // get the next value from iterator - category name
-        String category     = iterator.next().trim();
+      // put the cols 7 - 120 into iterator and get the category code and start time
+      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 7, 120 ) ).iterator(),
+                              row[2],
+                              categoryGroups,
+                              swimmer );
 
-        // if category isn't empty then get the category code
-        if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
-          if (categoryCode == null) {
-            System.err.println( "Category not found: " + category );
-          }
-        }
-
-        // get the next value from iterator if the next value exists - start time
-        if (iterator.hasNext()) {
-          startTime = iterator.next();
-        }
-        if (!category.isEmpty()) {
-          swimmer.getCategories().put( categoryCode, startTime );
-        }
-      }
 
       id++;
       swimmers.add( swimmer );
@@ -163,9 +148,11 @@ public class Main {
     return swimmers;
   }
 
-  /** Method to process csv data in am format into {@link Swimmer} objects
-   * @param data - list of swimmer data
-   * @param id - start id index
+  /**
+   * Method to process csv data in am format into {@link Swimmer} objects
+   *
+   * @param data           - list of swimmer data
+   * @param id             - start id index
    * @param categoryGroups - category groups to define category code
    * @return list of swimmers
    */
@@ -176,11 +163,11 @@ public class Main {
     for (String[] row : data) {
       Swimmer swimmer = new Swimmer();
       swimmer.setId( id );
-      swimmer.setSurname( row[2] );
-      swimmer.setName( row[3] );
-      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
-      // get a category year from cols 6 - 9. only the first non-empty value is taken
-      for (String catYear : Arrays.copyOfRange( row, 6, 9 )) {
+      swimmer.setSurname( row[3] );
+      swimmer.setName( row[4] );
+      swimmer.setGender( categoryGroups.get( row[2] ).getCode() );
+      // get a category year from cols 7 - 10. only the first non-empty value is taken
+      for (String catYear : Arrays.copyOfRange( row, 7, 10 )) {
         swimmer.setCatYear( catYear );
         if (!catYear.isEmpty()) {
           swimmer.setCatYear( catYear );
@@ -189,31 +176,44 @@ public class Main {
       }
 
       swimmer.setCategories( new HashMap<>() );
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 14 ) ).iterator();
-      while (iterator.hasNext()) {
-        String categoryCode = null;
-        String startTime    = null;
-        String category     = iterator.next().trim();
-
-        if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
-          if (categoryCode == null) {
-            System.err.println( "Category not found: " + category );
-          }
-        }
-
-        if (iterator.hasNext()) {
-          startTime = iterator.next();
-        }
-        if (!category.isEmpty()) {
-          swimmer.getCategories().put( categoryCode, startTime );
-        }
-      }
+      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 10, 31 ) ).iterator(),
+                              row[2],
+                              categoryGroups,
+                              swimmer );
 
       id++;
       swimmers.add( swimmer );
     }
     return swimmers;
+  }
+
+  private static void processCategoryAndTime( Iterator<String> iterator,
+                                              String categoryName,
+                                              Map<String, CategoryGroup> categoryGroups,
+                                              Swimmer swimmer ) {
+    // loop while a next value exists
+    while (iterator.hasNext()) {
+      String categoryCode = null;
+      String startTime    = null;
+      // get the next value from iterator - category name
+      String category = iterator.next().trim();
+
+      // if category isn't empty then get the category code
+      if (!category.isEmpty()) {
+        categoryCode = categoryGroups.get( categoryName ).getCategories().get( category );
+        if (categoryCode == null) {
+          System.err.println( "Category not found: " + category );
+        }
+      }
+
+      // get the next value from iterator if the next value exists - start time
+      if (iterator.hasNext()) {
+        startTime = iterator.next();
+      }
+      if (!category.isEmpty()) {
+        swimmer.getCategories().put( categoryCode, startTime );
+      }
+    }
   }
 
 
