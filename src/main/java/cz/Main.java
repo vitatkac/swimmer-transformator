@@ -131,12 +131,12 @@ public class Main {
       swimmer.setSurname( row[3] );
       swimmer.setName( row[4] );
       // get the category code by the name
-      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
+      swimmer.setGender( categoryGroups.get( row[2] ).getCode() );
       swimmer.setCatYear( row[6] );
 
       swimmer.setCategories( new HashMap<>() );
-      // put the cols 7 - 120 into iterator and get the category code and start time
-      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 7, 120 ) ).iterator(),
+      // put the cols 7 - 119 into iterator and get the category code and start time
+      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 7, 119 ) ).iterator(),
                               row[2],
                               categoryGroups,
                               swimmer );
@@ -176,7 +176,7 @@ public class Main {
       }
 
       swimmer.setCategories( new HashMap<>() );
-      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 10, 31 ) ).iterator(),
+      processCategoryAndTime( Arrays.asList( Arrays.copyOfRange( row, 10, 30 ) ).iterator(),
                               row[2],
                               categoryGroups,
                               swimmer );
