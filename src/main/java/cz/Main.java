@@ -131,7 +131,7 @@ public class Main {
       swimmer.setCatYear( row[6] );
 
       swimmer.setCategories( new HashMap<>() );
-      // put the cols 6 - 69 into iterator and get the category code and start time
+      // put the cols 7 - 118 into iterator and get the category code and start time
       Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 7, 118 ) ).iterator();
       // loop while a next value exists
       while (iterator.hasNext()) {
@@ -179,7 +179,7 @@ public class Main {
       swimmer.setSurname( row[3] );
       swimmer.setName( row[4] );
       swimmer.setGender( categoryGroups.get( row[2] ).getCode() );
-      // get a category year from cols 6 - 9. only the first non-empty value is taken
+      // get a category year from cols 7 - 9. only the first non-empty value is taken
       for (String catYear : Arrays.copyOfRange( row, 7, 9 )) {
         swimmer.setCatYear( catYear );
         if (!catYear.isEmpty()) {
