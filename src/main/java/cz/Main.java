@@ -41,7 +41,7 @@ public class Main {
       int                     i          = 0;
       // for each row in csv file
       for (String[] row : inputReader.readAll()) {
-        // if current row is the first then fullfill the category name and code
+        // if current row is the first then fulfill the category name and code
         if (i == 0) {
           categoryName = row[0];
           categoryGroup.setCode( row[1] );
@@ -142,7 +142,7 @@ public class Main {
 
         // if category isn't empty then get the category code
         if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
+          categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
           if (categoryCode == null) {
             System.err.println( "Category not found: " + category );
           }
@@ -189,14 +189,14 @@ public class Main {
       }
 
       swimmer.setCategories( new HashMap<>() );
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 29 ) ).iterator();
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 10, 29 ) ).iterator();
       while (iterator.hasNext()) {
         String categoryCode = null;
         String startTime    = null;
         String category     = iterator.next().trim();
 
         if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[1] ).getCategories().get( category );
+          categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
           if (categoryCode == null) {
             System.err.println( "Category not found: " + category );
           }
