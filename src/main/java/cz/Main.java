@@ -124,15 +124,15 @@ public class Main {
     for (String[] row : data) {
       Swimmer swimmer = new Swimmer();
       swimmer.setId( id );
-      swimmer.setSurname( row[2] );
-      swimmer.setName( row[3] );
+      swimmer.setSurname( row[3] );
+      swimmer.setName( row[4] );
       // get the category code by the name
-      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
-      swimmer.setCatYear( row[5] );
+      swimmer.setGender( categoryGroups.get( row[2] ).getCode() );
+      swimmer.setCatYear( row[6] );
 
       swimmer.setCategories( new HashMap<>() );
       // put the cols 6 - 69 into iterator and get the category code and start time
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 6, 69 ) ).iterator();
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 7, 118 ) ).iterator();
       // loop while a next value exists
       while (iterator.hasNext()) {
         String categoryCode = null;
@@ -176,11 +176,11 @@ public class Main {
     for (String[] row : data) {
       Swimmer swimmer = new Swimmer();
       swimmer.setId( id );
-      swimmer.setSurname( row[2] );
-      swimmer.setName( row[3] );
-      swimmer.setGender( categoryGroups.get( row[1] ).getCode() );
+      swimmer.setSurname( row[3] );
+      swimmer.setName( row[4] );
+      swimmer.setGender( categoryGroups.get( row[2] ).getCode() );
       // get a category year from cols 6 - 9. only the first non-empty value is taken
-      for (String catYear : Arrays.copyOfRange( row, 6, 9 )) {
+      for (String catYear : Arrays.copyOfRange( row, 7, 9 )) {
         swimmer.setCatYear( catYear );
         if (!catYear.isEmpty()) {
           swimmer.setCatYear( catYear );
@@ -189,7 +189,7 @@ public class Main {
       }
 
       swimmer.setCategories( new HashMap<>() );
-      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 14 ) ).iterator();
+      Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 9, 29 ) ).iterator();
       while (iterator.hasNext()) {
         String categoryCode = null;
         String startTime    = null;
