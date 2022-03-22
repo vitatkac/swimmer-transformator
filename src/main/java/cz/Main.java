@@ -86,7 +86,7 @@ public class Main {
       swimmerEl.setAttribute( "catYear", swimmer.getCatYear() );
       swimmerEl.setAttribute( "sex", swimmer.getGender() );
       for (Map.Entry<String, String> category : swimmer.getCategories().entrySet()) {
-        Element categoryEl = doc.createElement( "swdics" );
+        Element categoryEl = doc.createElement( "swdisc" );
         categoryEl.setAttribute( "discNo", category.getKey() );
         if (category.getValue() != null) {
           categoryEl.setAttribute( "startTime", category.getValue() );
