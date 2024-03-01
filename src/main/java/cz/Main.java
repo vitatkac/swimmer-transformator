@@ -12,7 +12,9 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.*;
 
-/** Class to transform data from csv to xml
+/**
+ * Class to transform data from csv to xml
+ *
  * @author Vitezslav Tkac
  */
 public class Main {
@@ -102,7 +104,7 @@ public class Main {
     transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
 
     // define the source
-    DOMSource    source = new DOMSource( doc );
+    DOMSource source = new DOMSource( doc );
     // result will be into stream
     StreamResult result = new StreamResult( output );
 
@@ -111,9 +113,11 @@ public class Main {
     System.out.println( "Output created." );
   }
 
-  /** Method to process csv data in pm format into {@link Swimmer} objects
-   * @param data - list of swimmer data
-   * @param id - start id index
+  /**
+   * Method to process csv data in pm format into {@link Swimmer} objects
+   *
+   * @param data           - list of swimmer data
+   * @param id             - start id index
    * @param categoryGroups - category groups to define category code
    * @return list of swimmers
    */
@@ -138,7 +142,7 @@ public class Main {
         String categoryCode = null;
         String startTime    = null;
         // get the next value from iterator - category name
-        String category     = iterator.next().trim();
+        String category = iterator.next().trim();
 
         // if category isn't empty then get the category code
         if (!category.isEmpty()) {
@@ -163,14 +167,16 @@ public class Main {
     return swimmers;
   }
 
-  /** Method to process csv data in am format into {@link Swimmer} objects
-   * @param data - list of swimmer data
-   * @param id - start id index
+  /**
+   * Method to process csv data in am format into {@link Swimmer} objects
+   *
+   * @param data           - list of swimmer data
+   * @param id             - start id index
    * @param categoryGroups - category groups to define category code
    * @return list of swimmers
    */
   private static List<Swimmer> processAmSwimmerFormat( List<String[]> data, long id, Map<String, CategoryGroup>
-          categoryGroups ) {
+    categoryGroups ) {
 
     List<Swimmer> swimmers = new ArrayList<>();
     for (String[] row : data) {
@@ -191,25 +197,28 @@ public class Main {
       swimmer.setCategories( new HashMap<>() );
       Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 10, 29 ) ).iterator();
       while (iterator.hasNext()) {
-        String categoryCode = null;
-        String startTime    = null;
-        String category     = iterator.next().trim();
 
-        if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
-          if (categoryCode == null) {
-            System.err.println( "Category not found: " + category );
+        String cat = iterator.next();
+        if (cat != null) {
+          String categoryCode = null;
+          String startTime    = null;
+          String category     = cat.trim();
+
+          if (!category.isEmpty()) {
+            categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
+            if (categoryCode == null) {
+              System.err.println( "Category not found: " + category );
+            }
+          }
+
+          if (iterator.hasNext()) {
+            startTime = iterator.next();
+          }
+          if (!category.isEmpty()) {
+            swimmer.getCategories().put( categoryCode, startTime );
           }
         }
-
-        if (iterator.hasNext()) {
-          startTime = iterator.next();
-        }
-        if (!category.isEmpty()) {
-          swimmer.getCategories().put( categoryCode, startTime );
-        }
       }
-
       id++;
       swimmers.add( swimmer );
     }
