@@ -139,28 +139,30 @@ public class Main {
       Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 7, 118 ) ).iterator();
       // loop while a next value exists
       while (iterator.hasNext()) {
-        String categoryCode = null;
-        String startTime    = null;
-        // get the next value from iterator - category name
-        String category = iterator.next().trim();
+        String nextCategory = iterator.next();
+        if (Objects.nonNull( nextCategory )) {
+          String categoryCode = null;
+          String startTime    = null;
+          // get the next value from iterator - category name
+          String category = nextCategory.trim();
 
-        // if category isn't empty then get the category code
-        if (!category.isEmpty()) {
-          categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
-          if (categoryCode == null) {
-            System.err.println( "Category not found: " + category );
+          // if category isn't empty then get the category code
+          if (!category.isEmpty()) {
+            categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
+            if (categoryCode == null) {
+              System.err.println( "Category not found: " + category );
+            }
+          }
+
+          // get the next value from iterator if the next value exists - start time
+          if (iterator.hasNext()) {
+            startTime = iterator.next();
+          }
+          if (!category.isEmpty()) {
+            swimmer.getCategories().put( categoryCode, startTime );
           }
         }
-
-        // get the next value from iterator if the next value exists - start time
-        if (iterator.hasNext()) {
-          startTime = iterator.next();
-        }
-        if (!category.isEmpty()) {
-          swimmer.getCategories().put( categoryCode, startTime );
-        }
       }
-
       id++;
       swimmers.add( swimmer );
     }
@@ -198,11 +200,11 @@ public class Main {
       Iterator<String> iterator = Arrays.asList( Arrays.copyOfRange( row, 10, 29 ) ).iterator();
       while (iterator.hasNext()) {
 
-        String cat = iterator.next();
-        if (cat != null) {
+        String nextCategory = iterator.next();
+        if (nextCategory != null) {
           String categoryCode = null;
           String startTime    = null;
-          String category     = cat.trim();
+          String category     = nextCategory.trim();
 
           if (!category.isEmpty()) {
             categoryCode = categoryGroups.get( row[2] ).getCategories().get( category );
